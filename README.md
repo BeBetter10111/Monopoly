@@ -1,139 +1,89 @@
-# 🍳 CookOff Arena
+# CookOff Arena
 
-A real-time Cooking Battle PvP game built with **Java (OOP), JavaFX UI, and Socket Networking**.
+CookOff Arena is a Java OOP game where two players (Human vs Human or Human vs AI) cook and compete on score.
 
----
+## OOP + SOLID Focus
 
-## 🎮 Overview
+- Encapsulation: internal player data and domain state are hidden behind methods.
+- Inheritance and polymorphism: `IPlayer`, `IJudge`, `IAIStrategy` allow runtime behavior changes.
+- Abstraction: UI, battle, scoring, and data loading are separate concerns.
+- SOLID:
+  - SRP: each class has a single responsibility.
+  - OCP: add new judges/strategies without changing core flow.
+  - LSP: `HumanPlayer` and `AIPlayer` are interchangeable as `IPlayer`.
+  - ISP: small interfaces (`IPlayer`, `IJudge`, `IAIStrategy`).
+  - DIP: `BattleSession` depends on `IJudge` and `Timer` abstractions/injected dependencies.
 
-CookOff Arena is a competitive cooking game where players race against each other (or AI) to complete recipes under time pressure.
+## Project Structure
 
-Players must:
+Matches your requested package architecture:
 
-* Follow recipe steps in the correct order
-* Optimize speed and accuracy
-* Compete in a turn-based PvP system
+- `core`: game loop, state, event bus
+- `domain`: pure models
+- `player`: player classes + AI strategy pattern
+- `battle`: session/timer/leaderboard + judge pattern
+- `ui`: menu and battle rendering
+- `infrastructure`: recipe loading from JSON
 
----
+## Run
 
-## 🚀 Features
+### Maven
 
-* 👥 PvP Multiplayer (Socket-based)
-* 🤖 AI Opponent (Strategy Pattern)
-* 🎯 Rule-based Cooking System
-* 📊 Weighted Scoring System
-* 🎮 Drag & Drop UI (JavaFX)
-* ⏱️ Time Pressure Mechanics
-
----
-
-## 🧠 OOP Concepts Applied
-
-* **Encapsulation**
-
-  * `GameState`, `Dish`, `Player`
-* **Inheritance**
-
-  * `Player` → `HumanPlayer`, `AIPlayer`
-* **Polymorphism**
-
-  * `makeMove()`, `Judge.score()`
-* **Abstraction**
-
-  * `Judge`, `AIStrategy`
-
----
-
-## 🧩 Design Patterns
-
-* Strategy Pattern → AI behavior (`AIStrategy`)
-* Composite Pattern → Scoring (`FinalJudge`)
-* Separation of Concerns → UI / Logic / Network
-
----
-
-## 🏗️ Project Structure
-
-```
-src/
- ├── app/
- ├── core/
- ├── domain/
- ├── scoring/
- ├── ui/
- ├── network/
- ├── util/
- └── data/
+```bash
+mvn clean test
+mvn exec:java
 ```
 
----
+### Gradle
 
-## ⚙️ How to Run
-
-### 1. Run Server
-
-```
-java network.server.GameServer
+```bash
+gradle test
+gradle run
 ```
 
-### 2. Run Client
+## Notes
 
-```
-java ui.MainApp
-```
+- Recipes are loaded from `src/main/resources/recipes.json`.
+- If loading fails, app falls back to default in-code recipes.
+- Current gameplay supports:
+  - multi-round match (1-5 rounds)
+  - replay loop (`Play again?`)
+  - switchable judge mode: `ScoreJudge`, `TimeJudge`, `CompositeJudge`
 
----
+## Report-Ready SOLID Mapping
 
-## 🎯 Game Flow
+### SRP (Single Responsibility)
 
-1. Start Game
-2. Player takes turn
-3. Validate move (RuleEngine)
-4. Update GameState
-5. Calculate score
-6. Repeat until game ends
+- `RecipeLoader` only loads recipe data.
+- `BattleSession` only runs a round and creates result objects.
+- `MenuUI` only handles user input flow.
 
----
+### OCP (Open/Closed)
 
-## 📊 Scoring Formula
+- Add new scoring behavior by creating another `IJudge` implementation.
+- Add new AI behavior by creating another `IAIStrategy` implementation.
+- Core loop does not change when new implementations are added.
 
-```
-Score = Accuracy * 5 + Speed * 3 + Completion * 10
-```
+### LSP (Liskov Substitution)
 
----
+- `HumanPlayer` and `AIPlayer` are both used through `IPlayer` in `GameLoop`.
+- `ScoreJudge`, `TimeJudge`, and `CompositeJudge` are interchangeable via `IJudge`.
 
-## 🌐 Multiplayer Architecture
+### ISP (Interface Segregation)
 
-* Client sends moves → Server
-* Server validates & syncs state
-* Broadcast updates to players
+- `IPlayer` exposes only battle-relevant player methods.
+- `IJudge` exposes only `evaluate`.
+- `IAIStrategy` focuses only recipe decision and ingredient selection.
 
----
+### DIP (Dependency Inversion)
 
-## ⚠️ Challenges
+- `BattleSession` receives `IJudge` from outside (injection at call site).
+- `GameLoop` depends on abstractions (`IPlayer`, `IJudge`, `IAIStrategy`) instead of concrete internals.
 
-* Synchronizing game state in multiplayer
-* Handling drag & drop UI events
-* Designing scalable OOP architecture
+## Class Diagram Alignment Notes
 
----
-
-## 🚀 Future Improvements
-
-* Online matchmaking
-* Advanced AI
-* Animation & sound effects
-* Replay system
-
----
-
-## 👨‍💻 Team
-
-* 3 Developers
-* Built for OOP Project
-
----
-
-## ⭐ Final Note
-This project demonstrates a complete application of **OOP principles, design patterns, and real-time interaction** in a game environment.
+- Player layer and strategy pattern are fully represented:
+  - `IPlayer`, `HumanPlayer`, `AIPlayer`, `IAIStrategy`, `EasyStrategy`, `HardStrategy`.
+- Battle engine and judge layer are represented:
+  - `BattleSession`, `Timer`, `Leaderboard`, `IJudge`, `ScoreJudge`, `TimeJudge`.
+- Added `AbstractJudge` and `CompositeJudge` to better match abstraction + polymorphic extension in UML direction.
